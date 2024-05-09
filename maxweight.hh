@@ -9,13 +9,21 @@
 #pragma once
 
 #include <cassert>
+
 #include <cmath>
+
 #include <fstream>
+
 #include <iostream>
+
 #include <memory>
+
 #include <queue>
+
 #include <sstream>
+
 #include <string>
+
 #include <vector>
 
 
@@ -66,8 +74,8 @@ typedef std::vector < std::shared_ptr < FoodItem >> FoodVector;
 // Load all the valid food items from the CSV database
 // Food items that are missing fields, or have invalid values, are skipped.
 // Returns nullptr on I/O error.
-std::unique_ptr < FoodVector > load_food_database(const std::string & path) {
-  std::unique_ptr < FoodVector > failure(nullptr);
+std::unique_ptr <FoodVector> load_food_database(const std::string & path) {
+  std::unique_ptr <FoodVector> failure(nullptr);
 
   std::ifstream f(path);
   if (!f) {
@@ -75,7 +83,7 @@ std::unique_ptr < FoodVector > load_food_database(const std::string & path) {
     return failure;
   }
 
-  std::unique_ptr < FoodVector > result(new FoodVector);
+  std::unique_ptr <FoodVector> result(new FoodVector);
 
   size_t line_number = 0;
   for (std::string line; std::getline(f, line);) {
@@ -197,14 +205,14 @@ void print_food_vector(const FoodVector & foods) {
 //
 // In addition, the vector includes only the first total_size food items
 // that match these criteria.
-std::unique_ptr < FoodVector > filter_food_vector(
+std::unique_ptr <FoodVector> filter_food_vector(
   const FoodVector & source, // Source vector containing food items to be filtered.
     double min_weight, // Minimum weight threshold for food items to be included.
     double max_weight, // Maximum weight threshold for food items to be included.
     int total_size) { // Maximum number of food items to include in the result.
 
   // Create an empty vector to store the filtered results.
-  auto result = std::make_unique < FoodVector > ();
+  auto result = std::make_unique <FoodVector> ();
 
   // Iterate through each item in the source vector.
   for (const auto & item: source) {
@@ -227,43 +235,40 @@ std::unique_ptr < FoodVector > filter_food_vector(
 // choose the foods whose weight-per-calorie is largest.
 // Repeat until no more food items can be chosen, either because we've 
 // run out of food items, or run out of space.
-std::unique_ptr<FoodVector> dynamic_max_weight(const FoodVector& foods, double total_calories_input) {
-    // Convert total_calories to integer
-    int total_calories = static_cast<int>(total_calories_input);
-    std::vector<std::vector<double>> dp(foods.size() + 1, std::vector<double>(total_calories + 1, 0));
-    std::vector<std::vector<bool>> take(foods.size() + 1, std::vector<bool>(total_calories + 1, false));
+std::unique_ptr<FoodVector> dynamic_max_weight(
+  const FoodVector & foodItems,
+    double totalCalorieLimit
+) {
+  // Create a copy of the food items vector.
+  std::unique_ptr<FoodVector> foodSource(new FoodVector(foodItems));
+  std::unique_ptr<FoodVector> optimalFoodSelection(new FoodVector);
 
-    // Fill the DP table
-    for (size_t i = 1; i <= foods.size(); ++i) {
-        for (int w = 0; w <= total_calories; ++w) {
-            if (foods[i-1]->calorie() > w) {
-                dp[i][w] = dp[i-1][w];
-            } else {
-                double weight_if_taken = dp[i-1][w - foods[i-1]->calorie()] + foods[i-1]->weight();
-                if (weight_if_taken > dp[i-1][w]) {
-                    dp[i][w] = weight_if_taken;
-                    take[i][w] = true;
-                } else {
-                    dp[i][w] = dp[i-1][w];
-                }
-            }
-        }
+  // Initialize the dynamic programming table
+  std::size_t foodCount = foodItems.size();
+  std::vector<std::vector<double>> dpTable(foodCount + 1, std::vector<double>(totalCalorieLimit + 1, 0));
+  // Initialize the first row of the table
+  for (size_t index = 1; index <= foodCount; index++) {
+    for (int calorie = 0; calorie <= totalCalorieLimit; calorie++) {
+      if ((*foodSource)[index - 1]->calorie() <= calorie) {
+        dpTable[index][calorie] = std::max(dpTable[index-1][calorie], dpTable[index-1][calorie - (*foodSource)[index-1]->calorie()] + (*foodSource)[index-1]->weight());
+      } else {
+        dpTable[index][calorie] = dpTable[index-1][calorie];
+      }
     }
-
-    // Reconstruct the optimal set of food items
-    std::unique_ptr<FoodVector> result(new FoodVector);
-    int calorie_remaining = total_calories;
-    for (int i = foods.size(); i > 0; --i) {
-        if (take[i][calorie_remaining]) {
-            // Take the food item
-            result->insert(result->begin(), foods[i-1]);
-            calorie_remaining -= foods[i-1]->calorie();
-        }
+  }
+  // Construct the optimal food selection
+  int index = foodCount;
+  int remainingCalories = totalCalorieLimit;
+  // Start from the bottom right corner of the table
+  while (index > 0 && remainingCalories > 0) {
+    if (dpTable[index][remainingCalories] != dpTable[index-1][remainingCalories]) {
+      optimalFoodSelection->emplace_back((*foodSource)[index-1]);
+      remainingCalories -= (*foodSource)[index-1]->calorie();
     }
-
-    return result;
+    index--;
+  }
+  return optimalFoodSelection;
 }
-
 
 
 // Compute the optimal set of food items with a exhaustive search algorithm.
@@ -271,15 +276,15 @@ std::unique_ptr<FoodVector> dynamic_max_weight(const FoodVector& foods, double t
 // whose weight in ounces fits within the total_weight one can carry and
 // whose total calories is greatest.
 // To avoid overflow, the size of the food items vector must be less than 64.
-std::unique_ptr < FoodVector > exhaustive_max_weight(const FoodVector & foods, double total_calorie) {
-  auto best_subset = std::make_unique < FoodVector > ();
+std::unique_ptr <FoodVector> exhaustive_max_weight(const FoodVector & foods, double total_calorie) {
+  auto best_subset = std::make_unique <FoodVector> ();
   double best_weight = 0.0;
 
   // Calculate the total number of possible subsets by shifting 1 left by the number of food items.
-  size_t subsetCount = 1ULL << foods.size();
-  for (size_t i = 0; i < subsetCount; ++i) {
+  size_t sub_count = 1ULL << foods.size();
+  for (size_t i = 0; i < sub_count; ++i) {
     // Create a new empty subset
-    auto current_subset = std::make_unique < FoodVector > ();
+    auto current_subset = std::make_unique <FoodVector> ();
     double current_weight = 0.0, current_calories = 0.0;
 
     for (size_t j = 0; j < foods.size(); ++j) {

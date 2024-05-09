@@ -17,7 +17,7 @@ int main()
   auto all_foods = load_food_database("food.csv");
   auto filtered_foods = filter_food_vector(*all_foods, 1, 2500, all_foods->size());
     
-  for(int i = 0; i < 22; i++)
+  for(int i = 0; i < 25; i++)
   {
     int n = i + 1;
     auto small_foods = filter_food_vector(*filtered_foods, 1, 2000, n);
