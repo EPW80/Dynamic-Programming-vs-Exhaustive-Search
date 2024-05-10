@@ -7,6 +7,7 @@ Calorie-Limited Weight-Maximization Problem
 Group members:
 
 - Erik Williams 🦍
+- <epwilliams@csu.fullerton.edu>
 
 ## Description
 
