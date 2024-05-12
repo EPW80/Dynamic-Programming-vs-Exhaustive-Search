@@ -16,8 +16,8 @@ int main()
 
   auto all_foods = load_food_database("food.csv");
   auto filtered_foods = filter_food_vector(*all_foods, 1, 2500, all_foods->size());
-    
-  for(int i = 0; i < 25; i++)
+
+  for (int i = 0; i < 25; i++)
   {
     int n = i + 1;
     auto small_foods = filter_food_vector(*filtered_foods, 1, 2000, n);
@@ -27,14 +27,12 @@ int main()
     exhaustive << n << "," << timer.elapsed() << endl;
   }
   exhaustive.close();
-    
+
   ofstream dynamic("dynamic.csv");
   dynamic << "n,seconds" << endl;
   dynamic << fixed << setprecision(10);
 
- 
-
-  for(int i = 0; i < 200; i++)
+  for (int i = 0; i < 200; i++)
   {
     int n = i + 1;
     auto small_foods = filter_food_vector(*filtered_foods, 1, 2000, n);
@@ -44,5 +42,4 @@ int main()
     dynamic << n << "," << timer.elapsed() << endl;
   }
   dynamic.close();
-
 }
