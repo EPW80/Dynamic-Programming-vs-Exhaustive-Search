@@ -1,13 +1,11 @@
-[![Review Assignment Due Date](https://classroom.github.com/assets/deadline-readme-button-24ddc0f5d75046c5622901739e7c5dd533143b0c8e959d652212380cedb1ea36.svg)](https://classroom.github.com/a/Wo6yMPjD)
 
-# Project 4 - Dynamic vs. Exhaustive
+# Dynamic Programming vs. Exhaustive Search
 
 Calorie-Limited Weight-Maximization Problem
 
-Group members:
+Contributor:
 
 - Erik Williams 🦍
-- <epwilliams@csu.fullerton.edu>
 
 ## Description
 
